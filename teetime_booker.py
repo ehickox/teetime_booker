@@ -15,6 +15,17 @@ OPEN_TEE_TIMES_URL = V_WEBSITE+"/index.php/api/booking/times"
 BOOK_URL = V_WEBSITE+"/index.php/api/booking/users/reservations"
 DELETE_URL = V_WEBSITE+"/index.php/api/booking/users/reservations/"
 
+def get_time_closest_to_30(times_in_hour):
+    minutes = []
+    mins_to_return = {}
+    for t in times_in_hour:
+        minutes.append(int(t.split(":")[1]))
+        mins_to_return[int(t.split(":")[1])] = t
+
+    best_min = min(minutes, key=lambda v: (abs(v - 30), v < 30))
+    # If there is a tie, return the later of the two.
+    return mins_to_return.get(best_min, None)
+
 def get_best_teetime(tee_times):
     my_time_available = False
     times = []
@@ -22,7 +33,7 @@ def get_best_teetime(tee_times):
     best_time = None
     for teetime in tee_times:
         times.append(teetime.get('time'))
-        if "09" in teetime.get('time'):
+        if "09:" in teetime.get('time'):
             times_9.append(teetime.get('time'))
         if "09:30" in teetime.get('time'):
             my_time_available = True
@@ -31,9 +42,10 @@ def get_best_teetime(tee_times):
     print("Hello, Mr. Hickox...")
     if my_time_available:
         print("Good news! Your usuall Sunday teetime of 9:30 AM is available!")
-    elif len(times_9) > 0:
+    elif len(times_9) > 0: 
         print("Unfortunately, your usual Sunday teetime is unavailable. However, there are "+str(len(times_9))+" times open in the hour of 9.")
-        best_time = times_9[0]
+        print("Booking the time closest to 9:30")
+        best_time = get_time_closest_to_30(times_9)
 
     return best_time
               
